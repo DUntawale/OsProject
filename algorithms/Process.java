@@ -57,10 +57,5 @@ public class Process {
 	public void setTt(){ // sets turn around time
 		int temp = this.ct - this.at;
 		this.tt = temp;		
-	}
-
-
-	
-		
-	
+	}	
 }

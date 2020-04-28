@@ -3,7 +3,7 @@ package algorithms;
 public class MultilevelFeedback {
 
 
-public static void findavgTime(int n, int processes[], int burst_time[], int arrival_time[]) {	
+public static Process[] findavgTime(int n, int processes[], int burst_time[], int arrival_time[]) {	
 	Process[] p;    
     p = new Process[n];
     
@@ -31,9 +31,6 @@ public static void findavgTime(int n, int processes[], int burst_time[], int arr
 					p[i].setTt();	
 					p[i].setWt();	
 					
-					System.out.print(p[i].getNum() + " ");
-					System.out.print(p[i].getWt() + " ");
-					System.out.print(p[i].getTt() + "\n");
 				}				
 			}
 		}		
@@ -46,38 +43,13 @@ public static void findavgTime(int n, int processes[], int burst_time[], int arr
 			p[i].setCt(time);
 			p[i].setTt();	
 			p[i].setWt();
-			System.out.print(p[i].getNum() + " ");
-			System.out.print(p[i].getWt() + " ");
-			System.out.print(p[i].getTt() + "\n");
+			
 		}
 	}
-	float awt = awt(p,n);
-	float att = att(p,n);
 	
-	System.out.print("The average turn around time is " + att + "\n");
-	System.out.print( "The average wait time is " + awt + "\n");
+	return p;
+	
 	
 	
 }
-private static float awt(Process[] p, int n){
-	float twt = 0;
-	float ret = 0;
-	for(int i = 0; i < n; i++) {
-		twt = twt + p[i].getWt();
-	}	
-	ret = twt /n;
-	
-	return ret;
-	
-}
-private static float att(Process[] p, int n){
-	float ttt = 0;
-	float ret = 0;
-	for(int i = 0; i < n; i++) {
-		ttt = ttt + p[i].getTt();
-	}
-	ret = ttt /n;
-	return ret;
-	
-}	
 }

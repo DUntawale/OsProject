@@ -2,7 +2,11 @@ package algorithms;
 
 public class HRRN {
 	
-public static void findavgTime(int n, int processes[], int burst_time[], int arrival_time[]) {	
+	
+	
+	
+	
+public static Process[] findavgTime(int n, int processes[], int burst_time[], int arrival_time[]) {	
 	Process[] p;    
     p = new Process[n];
     
@@ -13,34 +17,28 @@ public static void findavgTime(int n, int processes[], int burst_time[], int arr
 	boolean done = false; 
 	
 	while(!done) {
-		int run = findNext(p, time, n);
+		int run = findNext(p, time, n); //finds the next process to run
 		if( run == -1) { //test for fringe case where there is no process available to run but there are still processes in the queue
 			time ++;			
 		}
-		else {
+		else { //adjusts times
 			time = time + p[run].getBt();
 			p[run].setCom();
 			p[run].setCt(time);
 			p[run].setTt();	
-			p[run].setWt();	
-			
-			System.out.print(p[run].getNum() + " ");
-			System.out.print(p[run].getWt() + " ");
-			System.out.print(p[run].getTt() + "\n");
-			
+			p[run].setWt();				
 		}		
 		done = checkDone(n, p);
 	}
-	float awt = awt(p,n);
-	float att = att(p,n);
 	
-	System.out.print("The average turn around time is " + att + "\n");
-	System.out.print( "The average wait time is " + awt + "\n");
+	
+	
+	return p;
 		
 	}
 
 	
-	private static int findNext(Process[] p, int time, int n){
+	private static int findNext(Process[] p, int time, int n){ // Finds process with the highest response ratio
 		int ret = -1;
 		float hrr = -9999;
 		for(int i=0; i < n; i++) {
@@ -63,11 +61,11 @@ public static void findavgTime(int n, int processes[], int burst_time[], int arr
 	private static int wait(int time, int ar){
 		return time - ar;
 	}	
-	private static float getHRR(int bt, int wt){
+	private static float getHRR(int bt, int wt){ // calculates HHR
 		int temp = bt + wt;		
 		return temp/bt;
 	}	
-	private static boolean checkDone(int n, Process[] p){
+	private static boolean checkDone(int n, Process[] p){ // checks of the process is done
 		int check = 0;
 		for(int i = 0; i < n; i++) {
 			if(p[i].getCom() == 1) {
@@ -81,26 +79,6 @@ public static void findavgTime(int n, int processes[], int burst_time[], int arr
 			return false;
 		}		
 	}
-	private static float awt(Process[] p, int n){
-		float twt = 0;
-		float ret = 0;
-		for(int i = 0; i < n; i++) {
-			twt = twt + p[i].getWt();
-		}	
-		ret = twt /n;
-		
-		return ret;
-		
-	}
-	private static float att(Process[] p, int n){
-		float ttt = 0;
-		float ret = 0;
-		for(int i = 0; i < n; i++) {
-			ttt = ttt + p[i].getTt();
-		}
-		ret = ttt /n;
-		return ret;
-		
-	}	
+	
 	
 }
