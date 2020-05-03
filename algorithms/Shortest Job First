@@ -1,0 +1,315 @@
+}
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.Comparator;
+import java.util.Random;
+import java.util.ArrayList;
+
+class Job {
+
+
+    //field variables for the job
+    private int processTime;
+    private int timeRemaining;
+    private int timeArrival;
+    private int id;
+
+
+    //constructor to intialize time remaining and arrival time
+    public Job(int id, int processTime, int timeArrival) {
+        this.id = id;
+        this.processTime = processTime;
+        this.timeRemaining = processTime;
+        this.timeArrival = timeArrival;
+    }
+
+    public int getId(){
+        return id;
+    }
+
+    public int getProcessTime() {
+        return processTime;
+    }
+
+    //setter for time remaining
+    public void setTimeRemaining(int timeRemaining) {
+        this.timeRemaining = timeRemaining;
+    }
+
+    //getter for time remaining
+    public int getTimeRemaining() {
+        return timeRemaining;
+    }
+
+    //getter for time arrival
+    public int getTimeArrival() {
+        return timeArrival;
+    }
+
+    @Override
+    public String toString() {
+        return "Job{" +
+                "processTime=" + processTime +
+                ", timeRemaining=" + timeRemaining +
+                ", timeArrival=" + timeArrival +
+                '}';
+    }
+}
+
+/**
+ * This class extends Scheduler using shortest process next
+ */
+class ShortestProcessNext extends Scheduler {
+
+    public ShortestProcessNext(){
+        super();
+    }
+
+    //implement the sort method for the shortest time remaining scheduler
+    protected void sort(){
+        //sorts the queued jobs on custom comparator (time remaining)
+        queued_jobs.sort(new Comparator<Job>() {
+            @Override
+            public int compare(Job o1, Job o2) {
+                if(o1.getProcessTime() < o2.getProcessTime()){
+                    return -1;
+                }
+                else if(o1.getProcessTime() > o2.getProcessTime()){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+        });
+    }
+}
+
+/**
+ * This class extends Scheduler using shortest time remaining
+ */
+class ShortestTimeRemaining extends Scheduler{
+    public ShortestTimeRemaining(){
+        //intialize all variables
+        super();
+    }
+
+
+    //implement the sort method for the shortest time remaining scheduler
+    protected void sort(){
+        //sorts the queued jobs on custom comparator (time remaining)
+        queued_jobs.sort(new Comparator<Job>() {
+            @Override
+            public int compare(Job o1, Job o2) {
+                if(o1.getTimeRemaining() < o2.getTimeRemaining()){
+                    return -1;
+                }
+                else if(o1.getTimeRemaining() > o2.getTimeRemaining()){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+        });
+    }
+
+
+}
+
+/**
+ * This class represents a scheduler
+ * It uses a priority queue under the hood
+ * Schedulers should inherit from this one to implement the priority queue
+ */
+public class Scheduler {
+
+    //instance variables
+    protected ArrayList<Job> all_jobs;
+    protected ArrayList<Job> queued_jobs;
+    protected ArrayList<Job> finished_jobs;
+    protected int cycleCount;
+    private ArrayList<Job> gant;
+
+    //Constructor initializes everything
+    public Scheduler() {
+        all_jobs = new ArrayList<Job>();
+        queued_jobs = new ArrayList<Job>();
+        finished_jobs = new ArrayList<Job>();
+        gant = new ArrayList<Job>();
+        cycleCount = 0;
+
+    }
+
+    /**
+     * Adds a job to the future jobs array
+     * @param j the job to add
+     */
+    public void addJob(Job j){
+        all_jobs.add(j);
+    }
+
+    public ArrayList<Job> getAll_jobs() {
+        return all_jobs;
+    }
+
+    public ArrayList<Job> getQueued_jobs() {
+        return queued_jobs;
+    }
+
+    public ArrayList<Job> getFinished_jobs() {
+        return finished_jobs;
+    }
+
+    /**
+     * Runs a single cycle for the scheduler
+     */
+    public void run(){
+
+        //transition future jobs into queued jobs if their arrival time has been reached
+        for(Job j : all_jobs){
+            if(j.getTimeArrival()== cycleCount){
+                queued_jobs.add(j);
+            }
+        }
+
+        //sort based on time remaining on job using custom comparator
+        sort();
+
+        //will store the job to be processed this round
+        Job front = null;
+
+        //run a cycle on the front job if queued is not empty
+        if(!queued_jobs.isEmpty()){
+            //the front job is processed
+            front = queued_jobs.get(0);
+
+            //run the first job and decrement its time
+            front.setTimeRemaining(front.getTimeRemaining()-1);
+
+            //if front job is complete, remove it from queued
+            if(front.getTimeRemaining() <= 0){
+                queued_jobs.remove(front);
+
+                //add it to finished
+                finished_jobs.add(front);
+            }
+        }
+
+        //add the processed job to the gant array
+        gant.add(front);
+
+        //increment cycle count
+        cycleCount++;
+    }
+
+    /**
+     * Generates a gant chart for the run
+     */
+    public void generateGant(){
+        String[][] gantArray = new String[all_jobs.size()+1][cycleCount];
+
+        //fill in our top left corner
+        gantArray[0][0] = " ";
+
+        //fill in our header
+        for(int col = 1; col<cycleCount; col++){
+            //header of cycle number
+            gantArray[0][col] = Integer.toString(col-1);
+        }
+
+        //fill in our left side indexes
+        for(int row = 1; row<=all_jobs.size(); row++){
+            //get the ID of the jobs and fill in the left side
+            gantArray[row][0] = Integer.toString(all_jobs.get(row-1).getId());
+        }
+
+        //fill in the data
+        for(int cycle = 1; cycle<gant.size(); cycle++){
+            //convert the cycle number string to an integer
+            int cycleNum = Integer.parseInt(gantArray[0][cycle]);
+
+            //get the job corresponding this cycle
+            Job job = gant.get(cycleNum);
+
+            //get the job ID as a string
+            String job_id = Integer.toString(job.getId());
+
+            //find the row of this job
+            for(int i = 1; i<gantArray.length; i++){
+
+                //mark the column as X for this job if used
+                if(job_id.equals(gantArray[i][0])){
+                    gantArray[i][cycle] = "X";
+                }
+
+                //otherwise mark it as dot
+                else{
+                    gantArray[i][cycle] = ".";
+                }
+            }
+        }
+
+        //print out the gant chart
+        for(int row = 0; row<gantArray.length; row++){
+            for(int col = 0; col<gantArray[row].length; col++){
+                System.out.print(String.format("%3s",gantArray[row][col]));
+            }
+            System.out.println();
+        }
+
+    }
+
+    /**
+     * Sort method to be used by subclasses to sort their priority queues
+     * NEEDS TO BE OVERRIDDEN
+     */
+    protected void sort(){
+        throw new NotImplementedException();
+    }
+
+
+    /**
+     * Driver method to run both shortest process and shortest time
+     * @param args
+     */
+    public static void main(String[] args){
+        Random r = new Random();
+
+        //create our schedulers
+        ShortestProcessNext spn = new ShortestProcessNext();
+        ShortestTimeRemaining str = new ShortestTimeRemaining();
+
+        //generate 10 jobs for each scheduler
+        for(int i = 1; i<11; i++){
+            //generate random job
+            int arrival = r.nextInt(5);
+            int time = r.nextInt(5);
+
+            //add to spn
+            Job job_spn = new Job(i, time, arrival);
+            spn.addJob(job_spn);
+
+            //add to str
+            Job job_str = new Job(i, time, arrival);
+            str.addJob(job_str);
+        }
+
+        //RUN SPN TO COMPLETION
+        System.out.println("Running Shortest Process Next");
+        while(spn.getFinished_jobs().size() < spn.getAll_jobs().size()){
+            spn.run();
+        }//gernate gant chart
+        spn.generateGant();
+
+        System.out.println();
+
+
+        //RUN STR TO COMPLETION
+        System.out.println("Running Shortest Time Remaining");
+        while(str.getFinished_jobs().size() < str.getAll_jobs().size()){
+            str.run();
+        }//gernate gant chart
+        str.generateGant();
+
+    }
